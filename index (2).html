@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Management Challenges Among College Students</title>
+<style>
+:root{--bg:#f4f5fa;--card:#fff;--tx:#1d2433;--mu:#667085;--ln:#e4e7ee;--ac:#4f46e5;--hi:#f59e0b}
+body.dark{--bg:#0f1420;--card:#181f2e;--tx:#e8ebf3;--mu:#95a0b5;--ln:#293246;--ac:#8b8cf8}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--tx)}
+header{background:var(--ac);color:#fff;padding:20px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+h1{margin:0;font-size:21px}header p{margin:4px 0 0;opacity:.85;font-size:13px}
+button{font:inherit;cursor:pointer}
+.tb button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 12px;margin-left:6px}
+main{max-width:1100px;margin:auto;padding:16px}
+h2{margin:24px 0 10px;font-size:18px}
+#bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:34px;font-size:13px;color:var(--mu)}
+.chip{background:var(--hi);color:#000;border:0;border-radius:16px;padding:5px 12px;font-size:12px}
+.clr{background:none;border:1px solid var(--ln);color:var(--tx);border-radius:16px;padding:5px 12px;font-size:12px}
+.k{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:10px}
+.k div,.c{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px 14px}
+.k b{display:block;font-size:26px;color:var(--ac)}.k span{font-size:12px;color:var(--mu)}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.c h3{margin:0 0 10px;font-size:14px}
+.r{display:grid;grid-template-columns:135px 1fr 72px;align-items:center;gap:8px;font-size:12px;margin:3px 0;padding:3px 4px;border-radius:6px;cursor:pointer}
+.r:hover{background:var(--ln)}.r.on{outline:2px solid var(--hi)}
+.r i{display:block;height:14px;background:var(--ac);border-radius:4px;transition:width .35s}
+.r.on i{background:var(--hi)}.r b{text-align:right;font-weight:600}
+.s{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:6px 8px;border-bottom:1px solid var(--ln);text-align:center;white-space:nowrap}
+td:first-child,th:first-child{text-align:left}
+.n{font-size:12px;color:var(--mu);margin:8px 0 0}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px}
+.c .hd h3{margin:0}
+.ty{white-space:nowrap}.ty button{background:none;border:1px solid var(--ln);color:var(--mu);border-radius:6px;padding:2px 7px;font-size:11px;margin-left:3px}
+.ty button.a{background:var(--ac);color:#fff;border-color:var(--ac)}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--mu);font-size:9px}svg text.v{fill:var(--tx);font-weight:700}
+.sg,.dot{cursor:pointer}.sg rect,.dot circle{fill:var(--ac)}.sg.on rect,.dot.on circle{fill:var(--hi)}circle.sg.on{stroke-width:28}
+.dn{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:center}
+.lg{font-size:12px;padding:3px 4px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px}.lg:hover{background:var(--ln)}.lg.on{outline:2px solid var(--hi)}
+.lg u{width:10px;height:10px;border-radius:2px;display:inline-block}.lg b{margin-left:auto}
+.tb select{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 8px;margin-left:6px;font:inherit}
+.tb select option{color:#000}
+</style>
+</head>
+<body>
+<header><div><h1>Time Management Challenges Among College Students</h1>
+<p>Interactive dashboard · click any bar, slice or dot to filter everything · Google Forms survey</p></div>
+<div class="tb"><select id="gty"><option value="mix">All charts: Mixed</option><option value="bar">All: Bars</option><option value="col">All: Columns</option><option value="donut">All: Donut</option><option value="line">All: Line</option></select><button id="srt">Sort bars: survey order</button><button id="thm">Dark mode</button></div></header>
+<main>
+<div id="bar"></div>
+<div class="k" id="k"></div>
+<h2>Charts <small style="font-weight:normal;color:var(--mu);font-size:13px">(click a bar to filter, click again to remove)</small></h2>
+<div class="g" id="g"></div>
+<h2>Mean and standard deviation</h2>
+<div class="c s"><table id="t"></table><p class="n">Answers coded 1–4 (lowest = 1). SD is the sample SD (n − 1). Updates with your filters.</p></div>
+<h2>Correlation (Pearson r)</h2>
+<div class="c s"><table id="m"></table><p class="n">Blue = positive, red = negative. With a small sample, treat results as indicative only.</p></div>
+</main>
+<script>
+var KEYS=["gender", "age", "year", "study_hours", "tm_rating", "planning", "balance", "challenge", "postpone", "mobile", "assign_diff", "perf_impact", "stress", "method", "improve", "reason"];
+var ROWS=[["Male","20–22","3rd year","Less than 2 hours","Average","Often","Often","Procrastination","Often","3–5 hours","Sometimes","Agree","Often","Mobile reminders","Better planning","Procrastination"],["Male","20–22","3rd year","Less than 2 hours","Average","Sometimes","Sometimes","Social media","Sometimes","Less than 1 hour","Sometimes","Agree","Often","To-do list","Setting priorities","Lack of proper planning"],["Male","17–19","3rd year","Less than 2 hours","Good","Often","Sometimes","Academic work","Often","3–5 hours","Sometimes","Agree","Never","No method","Reduced social media usage","Excessive mobile use"],["Male","17–19","2nd year","Less than 2 hours","Poor","Often","Always","Academic work","Often","Less than 1 hour","Always","Strongly disagree","Often","Calendar","Reduced social media usage","Too much academic work"],["Male","20–22","4th year","Less than 2 hours","Good","Sometimes","Always","Social media","Often","Less than 1 hour","Often","Disagree","Always","No method","Reduced social media usage","Procrastination"],["Male","20–22","4th year","2–4 hours","Average","Always","Often","Social media","Sometimes","1–3 hours","Always","Disagree","Never","No method","Time management training","Too much academic work"],["Male","17–19","1st year","4–6 hours","Poor","Never","Always","Lack of planning","Always","More than 5 hours","Always","Disagree","Often","To-do list","Reduced social media usage","Procrastination"],["Male","17–19","3rd year","2–4 hours","Good","Sometimes","Often","Lack of planning","Often","More than 5 hours","Never","Agree","Always","To-do list","Better planning","Too much academic work"],["Male","23–25","2nd year","2–4 hours","Average","Never","Often","Academic work","Often","Less than 1 hour","Often","Disagree","Never","Mobile reminders","Reduced social media usage","Excessive mobile use"],["Female","23–25","2nd year","Less than 2 hours","Poor","Always","Always","Social media","Often","1–3 hours","Always","Disagree","Never","To-do list","Better planning","Excessive mobile use"],["Male","20–22","3rd year","Less than 2 hours","Excellent","Always","Often","Social media","Always","1–3 hours","Always","Disagree","Always","To-do list","Reduced social media usage","Too much academic work"],["Male","20–22","3rd year","2–4 hours","Good","Always","Often","Social media","Often","1–3 hours","Always","Agree","Never","Calendar","Time management training","Excessive mobile use"],["Female","23–25","3rd year","2–4 hours","Good","Never","Always","Lack of planning","Often","3–5 hours","Always","Disagree","Often","No method","Time management training","Excessive mobile use"],["Male","20–22","3rd year","4–6 hours","Excellent","Often","Often","Social media","Sometimes","1–3 hours","Often","Strongly agree","Always","To-do list","Reduced social media usage","Too much academic work"],["Female","17–19","2nd year","4–6 hours","Good","Often","Always","Social media","Sometimes","3–5 hours","Never","Disagree","Never","To-do list","Time management training","Excessive mobile use"],["Male","20–22","4th year","2–4 hours","Good","Never","Sometimes","Academic work","Always","1–3 hours","Sometimes","Strongly agree","Never","No method","Better planning","Excessive mobile use"],["Male","20–22","3rd year","4–6 hours","Poor","Never","Never","Lack of planning","Always","1–3 hours","Always","Strongly agree","Always","Calendar","Reduced social media usage","Too much academic work"],["Male","23–25","3rd year","2–4 hours","Average","Often","Always","Procrastination","Sometimes","1–3 hours","Never","Disagree","Never","Mobile reminders","Better planning","Procrastination"],["Male","20–22","3rd year","2–4 hours","Average","Often","Always","Social media","Never","3–5 hours","Sometimes","Agree","Sometimes","Calendar","Better planning","Too much academic work"]];
+var R=ROWS.map(function(a){var o={};KEYS.forEach(function(k,i){o[k]=a[i]});return o});
+var F=["Never","Sometimes","Often","Always"];
+var Q={
+gender:["Gender",["Male","Female"]],
+age:["Age group",["17–19","20–22","23–25","Above 25"]],
+year:["Year of study",["1st year","2nd year","3rd year","4th year"]],
+study_hours:["Academic hours per day",["Less than 2 hours","2–4 hours","4–6 hours","More than 6 hours"]],
+tm_rating:["Time management skill",["Poor","Average","Good","Excellent"]],
+planning:["Plans daily activities",F],
+balance:["Difficulty balancing life",F],
+postpone:["Postpones until deadline",F],
+mobile:["Daily mobile phone use",["Less than 1 hour","1–3 hours","3–5 hours","More than 5 hours"]],
+assign_diff:["Trouble finishing assignments",F],
+perf_impact:["Poor time mgmt hurts grades",["Strongly disagree","Disagree","Agree","Strongly agree"]],
+stress:["Stress from lack of time",F],
+challenge:["Biggest challenge",null],
+reason:["Main reason for struggling",null],
+method:["Method used",null],
+improve:["What would help",null]
+};
+var ST=["study_hours","tm_rating","planning","balance","postpone","mobile","assign_diff","perf_impact","stress"];
+var SN=["Academic hours","Time mgmt skill","Planning","Balancing","Postponing","Mobile use","Assignments","Perf. impact","Stress"];
+Object.keys(Q).forEach(function(k){if(!Q[k][1]){var c={};R.forEach(function(r){c[r[k]]=(c[r[k]]||0)+1});Q[k][1]=Object.keys(c).sort(function(a,b){return c[b]-c[a]})}});
+var TY=[["bar","Bars"],["col","Columns"],["donut","Donut"],["line","Line"]],PAL=["#4f46e5","#06b6d4","#f59e0b","#ef4444","#10b981","#8b5cf6","#ec4899"];
+var MIX={gender:"donut",age:"col",year:"col",study_hours:"col",tm_rating:"col",planning:"line",balance:"line",postpone:"line",mobile:"col",assign_diff:"line",perf_impact:"col",stress:"donut",challenge:"donut",reason:"bar",method:"donut",improve:"bar"};
+var TP=JSON.parse(JSON.stringify(MIX));
+function at(k,l,v,n){return 'data-k="'+k+'" data-v="'+l+'" title="'+l+': '+v+' of '+n+'"'}
+function sh(l){return l.length>10?l.slice(0,9)+"…":l}
+function draw(k,ls,c,mx,n){
+  var t=TP[k],o="",m=ls.length,on=function(l){return sel[k]===l?" on":""};
+  if(t==="col"){var w=300/m;o='<svg viewBox="0 0 300 150">';
+    ls.forEach(function(l,i){var v=c[l],hh=v/mx*90,x=i*w+w*.15;
+      o+='<g class="sg'+on(l)+'" '+at(k,l,v,n)+'><rect x="'+x+'" y="'+(110-hh)+'" width="'+w*.7+'" height="'+hh+'" rx="3"/><text class="v" x="'+(x+w*.35)+'" y="'+(106-hh)+'" text-anchor="middle">'+v+'</text><text x="'+(x+w*.35)+'" y="124" text-anchor="middle">'+sh(l)+'</text></g>'});
+    return o+'</svg>'}
+  if(t==="line"){var st=m>1?250/(m-1):0,X=function(i){return 25+i*st},Y=function(v){return 105-v/mx*85};
+    o='<svg viewBox="0 0 300 150"><polyline style="stroke:var(--ac)" fill="none" stroke-width="2.5" points="'+ls.map(function(l,i){return X(i)+','+Y(c[l])}).join(" ")+'"/>';
+    ls.forEach(function(l,i){var v=c[l];
+      o+='<g class="dot'+on(l)+'" '+at(k,l,v,n)+'><circle cx="'+X(i)+'" cy="'+Y(v)+'" r="6"/><text class="v" x="'+X(i)+'" y="'+(Y(v)-10)+'" text-anchor="middle">'+v+'</text><text x="'+X(i)+'" y="128" text-anchor="middle">'+sh(l)+'</text></g>'});
+    return o+'</svg>'}
+  if(t==="donut"){var C=251.33,cum=0,tot=n||1;
+    o='<div class="dn"><svg viewBox="0 0 120 120"><g transform="rotate(-90 60 60)">';
+    ls.forEach(function(l,i){var v=c[l],len=v/tot*C;
+      if(v)o+='<circle class="sg'+on(l)+'" '+at(k,l,v,n)+' cx="60" cy="60" r="40" fill="none" stroke="'+PAL[i%7]+'" stroke-width="22" stroke-dasharray="'+len+' '+(C-len)+'" stroke-dashoffset="'+(-cum)+'"/>';
+      cum+=len});
+    o+='</g><text class="v" x="60" y="65" text-anchor="middle" style="font-size:16px">'+n+'</text></svg><div>';
+    ls.forEach(function(l,i){var v=c[l];o+='<div class="lg'+on(l)+'" '+at(k,l,v,n)+'><u style="background:'+PAL[i%7]+'"></u>'+l+' <b>'+v+' ('+(n?Math.round(v/n*100):0)+'%)</b></div>'});
+    return o+'</div></div>'}
+  ls.forEach(function(l){var v=c[l];o+='<div class="r'+on(l)+'" '+at(k,l,v,n)+'><span>'+l+'</span><i style="width:'+(v/mx*100)+'%"></i><b>'+v+' ('+(n?Math.round(v/n*100):0)+'%)</b></div>'});
+  return o}
+var sel={},byCount=false,$=function(i){return document.getElementById(i)};
+function mean(a){return a.reduce(function(s,x){return s+x},0)/a.length}
+function sd(a){if(a.length<2)return NaN;var m=mean(a);return Math.sqrt(a.reduce(function(s,x){return s+(x-m)*(x-m)},0)/(a.length-1))}
+function cor(x,y){if(x.length<3)return NaN;var mx=mean(x),my=mean(y),n=0,dx=0,dy=0;x.forEach(function(v,i){n+=(v-mx)*(y[i]-my);dx+=(v-mx)*(v-mx);dy+=(y[i]-my)*(y[i]-my)});return dx&&dy?n/Math.sqrt(dx*dy):NaN}
+function f2(v){return isNaN(v)?"–":v.toFixed(2)}
+function code(rs,k){return rs.map(function(r){return Q[k][1].indexOf(r[k])+1})}
+function render(){
+  var rs=R.filter(function(r){return Object.keys(sel).every(function(k){return r[k]===sel[k]})}),n=rs.length;
+  var chips=Object.keys(sel).map(function(k){return '<button class="chip" data-k="'+k+'" data-v="'+sel[k]+'">'+Q[k][0]+': '+sel[k]+' ✕</button>'}).join("");
+  $("bar").innerHTML=(chips?chips+'<button class="clr" id="clr">Clear all</button>':'Showing all responses')+' <span>('+n+' of '+R.length+')</span>';
+  var p=function(k,v){return n?Math.round(100*rs.filter(function(r){return v.indexOf(r[k])>-1}).length/n)+"%":"–"};
+  var K=[[n,"Respondents"],[p("tm_rating",["Good","Excellent"]),"rate time management Good/Excellent"],[p("postpone",["Often","Always"]),"often/always postpone work"],[p("stress",["Often","Always"]),"often/always feel time-stressed"],[p("mobile",["3–5 hours","More than 5 hours"]),"use phone 3+ hours a day"],[p("challenge",["Social media"]),"say social media is top challenge"]];
+  $("k").innerHTML=K.map(function(x){return '<div><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'}).join("");
+  var h="";
+  Object.keys(Q).forEach(function(k){
+    var c={};Q[k][1].forEach(function(l){c[l]=0});rs.forEach(function(r){c[r[k]]++});
+    var ls=Q[k][1].slice();if(byCount)ls.sort(function(a,b){return c[b]-c[a]});
+    var mx=Math.max.apply(null,ls.map(function(l){return c[l]}))||1;
+    h+='<div class="c"><div class="hd"><h3>'+Q[k][0]+'</h3><div class="ty">'+TY.map(function(x){return '<button data-q="'+k+'" data-t="'+x[0]+'" class="'+(TP[k]===x[0]?'a':'')+'">'+x[1]+'</button>'}).join("")+'</div></div>'+draw(k,ls,c,mx,n)+'</div>'});
+  $("g").innerHTML=h;
+  var cd=ST.map(function(k){return code(rs,k)});
+  $("t").innerHTML='<tr><th>Variable</th><th>Mean</th><th>SD</th><th>n</th></tr>'+ST.map(function(k,i){return '<tr><td>'+Q[k][0]+'</td><td>'+f2(mean(cd[i]))+'</td><td>'+f2(sd(cd[i]))+'</td><td>'+n+'</td></tr>'}).join("");
+  var m='<tr><th></th>'+SN.map(function(s,i){return '<th title="'+s+'">'+(i+1)+'</th>'}).join("")+'</tr>';
+  ST.forEach(function(a,i){m+='<tr><td>'+(i+1)+'. '+SN[i]+'</td>';
+    ST.forEach(function(b,j){var r=i===j?1:cor(cd[i],cd[j]),al=isNaN(r)?0:Math.abs(r)*.65;
+      m+='<td style="background:'+(r>=0?'rgba(79,70,229,':'rgba(239,68,68,')+al+')">'+f2(r)+'</td>'});m+='</tr>'});
+  $("m").innerHTML=m;
+}
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-k],[data-t],#clr");if(!t)return;
+  if(t.getAttribute("data-t")){TP[t.getAttribute("data-q")]=t.getAttribute("data-t");render();return}
+  if(t.id==="clr"){sel={}}
+  else{var k=t.getAttribute("data-k"),v=t.getAttribute("data-v");if(sel[k]===v)delete sel[k];else sel[k]=v}
+  render();
+});
+$("srt").onclick=function(){byCount=!byCount;this.textContent="Sort bars: "+(byCount?"by count":"survey order");render()};
+$("gty").onchange=function(){var v=this.value;Object.keys(Q).forEach(function(k){TP[k]=v==="mix"?MIX[k]:v});render()};
+$("thm").onclick=function(){document.body.classList.toggle("dark");this.textContent=document.body.classList.contains("dark")?"Light mode":"Dark mode"};
+render();
+</script>
+</body>
+</html>
