@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Time Management Challenges Among College Students – Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1d2433;--muted:#667085;--line:#e4e7ee;--accent:#4f46e5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--card:#181f2e;--text:#e8ebf3;--muted:#95a0b5;--line:#293246;--accent:#8b8cf8}}
+:root[data-theme="dark"]{--bg:#0f1420;--card:#181f2e;--text:#e8ebf3;--muted:#95a0b5;--line:#293246;--accent:#8b8cf8}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+header{padding:28px 20px 8px;max-width:1200px;margin:auto}
+h1{margin:0 0 4px;font-size:1.6rem}
+header p{margin:0;color:var(--muted)}
+main{max-width:1200px;margin:auto;padding:12px 20px 40px}
+.filters{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+select{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi,.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi b{display:block;font-size:1.7rem;color:var(--accent)}
+.kpi span{color:var(--muted);font-size:.85rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.card h3{margin:0 0 8px;font-size:.95rem}
+.chart{position:relative;height:230px}
+h2{margin:26px 0 10px;font-size:1.15rem}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+.note{color:var(--muted);font-size:.8rem;margin-top:8px}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Time Management Challenges Among College Students</h1>
+  <p>Descriptive quantitative study · Google Forms survey · Convenience sampling · Aug–Sep 2026</p>
+</header>
+<main>
+  <div class="filters">
+    <label>Gender <select id="fGender"></select></label>
+    <label>Year of study <select id="fYear"></select></label>
+    <label>Age group <select id="fAge"></select></label>
+  </div>
+  <div class="kpis" id="kpis"></div>
+
+  <h2>Respondent profile</h2>
+  <div class="grid" id="g-profile"></div>
+
+  <h2>Time-management habits</h2>
+  <div class="grid" id="g-habits"></div>
+
+  <h2>Challenges and improvement</h2>
+  <div class="grid" id="g-challenges"></div>
+
+  <h2>Mean and standard deviation</h2>
+  <div class="card scroll"><table id="statsTbl"></table>
+    <p class="note">Ordinal answers coded 1–4 (Never=1 … Always=4; Poor=1 … Excellent=4; Strongly disagree=1 … Strongly agree=4; hour/usage bands coded lowest=1). Standard deviation is the sample SD (n−1).</p></div>
+
+  <h2>Correlation (Pearson r)</h2>
+  <div class="card scroll"><table id="corrTbl"></table>
+    <p class="note">Values near +1 or −1 indicate a strong relationship. With a small sample, treat results as indicative only.</p></div>
+</main>
+<footer>Built from survey data · Charts by Chart.js</footer>
+
+<script>
+const DATA = [
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "3rd year",
+  "study_hours": "Less than 2 hours",
+  "tm_rating": "Average",
+  "planning": "Often",
+  "balance": "Often",
+  "challenge": "Procrastination",
+  "postpone": "Often",
+  "mobile": "3–5 hours",
+  "assign_diff": "Sometimes",
+  "perf_impact": "Agree",
+  "stress": "Often",
+  "method": "Mobile reminders",
+  "improve": "Better planning",
+  "reason": "Procrastination"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "3rd year",
+  "study_hours": "Less than 2 hours",
+  "tm_rating": "Average",
+  "planning": "Sometimes",
+  "balance": "Sometimes",
+  "challenge": "Social media",
+  "postpone": "Sometimes",
+  "mobile": "Less than 1 hour",
+  "assign_diff": "Sometimes",
+  "perf_impact": "Agree",
+  "stress": "Often",
+  "method": "To-do list",
+  "improve": "Setting priorities",
+  "reason": "Lack of proper planning"
+ },
+ {
+  "gender": "Male",
+  "age": "17–19",
+  "year": "3rd year",
+  "study_hours": "Less than 2 hours",
+  "tm_rating": "Good",
+  "planning": "Often",
+  "balance": "Sometimes",
+  "challenge": "Academic work",
+  "postpone": "Often",
+  "mobile": "3–5 hours",
+  "assign_diff": "Sometimes",
+  "perf_impact": "Agree",
+  "stress": "Never",
+  "method": "No method",
+  "improve": "Reduced social media usage",
+  "reason": "Excessive mobile use"
+ },
+ {
+  "gender": "Male",
+  "age": "17–19",
+  "year": "2nd year",
+  "study_hours": "Less than 2 hours",
+  "tm_rating": "Poor",
+  "planning": "Often",
+  "balance": "Always",
+  "challenge": "Academic work",
+  "postpone": "Often",
+  "mobile": "Less than 1 hour",
+  "assign_diff": "Always",
+  "perf_impact": "Strongly disagree",
+  "stress": "Often",
+  "method": "Calendar",
+  "improve": "Reduced social media usage",
+  "reason": "Too much academic work"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "4th year",
+  "study_hours": "Less than 2 hours",
+  "tm_rating": "Good",
+  "planning": "Sometimes",
+  "balance": "Always",
+  "challenge": "Social media",
+  "postpone": "Often",
+  "mobile": "Less than 1 hour",
+  "assign_diff": "Often",
+  "perf_impact": "Disagree",
+  "stress": "Always",
+  "method": "No method",
+  "improve": "Reduced social media usage",
+  "reason": "Procrastination"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "4th year",
+  "study_hours": "2–4 hours",
+  "tm_rating": "Average",
+  "planning": "Always",
+  "balance": "Often",
+  "challenge": "Social media",
+  "postpone": "Sometimes",
+  "mobile": "1–3 hours",
+  "assign_diff": "Always",
+  "perf_impact": "Disagree",
+  "stress": "Never",
+  "method": "No method",
+  "improve": "Time management training",
+  "reason": "Too much academic work"
+ },
+ {
+  "gender": "Male",
+  "age": "17–19",
+  "year": "1st year",
+  "study_hours": "4–6 hours",
+  "tm_rating": "Poor",
+  "planning": "Never",
+  "balance": "Always",
+  "challenge": "Lack of planning",
+  "postpone": "Always",
+  "mobile": "More than 5 hours",
+  "assign_diff": "Always",
+  "perf_impact": "Disagree",
+  "stress": "Often",
+  "method": "To-do list",
+  "improve": "Reduced social media usage",
+  "reason": "Procrastination"
+ },
+ {
+  "gender": "Male",
+  "age": "17–19",
+  "year": "3rd year",
+  "study_hours": "2–4 hours",
+  "tm_rating": "Good",
+  "planning": "Sometimes",
+  "balance": "Often",
+  "challenge": "Lack of planning",
+  "postpone": "Often",
+  "mobile": "More than 5 hours",
+  "assign_diff": "Never",
+  "perf_impact": "Agree",
+  "stress": "Always",
+  "method": "To-do list",
+  "improve": "Better planning",
+  "reason": "Too much academic work"
+ },
+ {
+  "gender": "Male",
+  "age": "23–25",
+  "year": "2nd year",
+  "study_hours": "2–4 hours",
+  "tm_rating": "Average",
+  "planning": "Never",
+  "balance": "Often",
+  "challenge": "Academic work",
+  "postpone": "Often",
+  "mobile": "Less than 1 hour",
+  "assign_diff": "Often",
+  "perf_impact": "Disagree",
+  "stress": "Never",
+  "method": "Mobile reminders",
+  "improve": "Reduced social media usage",
+  "reason": "Excessive mobile use"
+ },
+ {
+  "gender": "Female",
+  "age": "23–25",
+  "year": "2nd year",
+  "study_hours": "Less than 2 hours",
+  "tm_rating": "Poor",
+  "planning": "Always",
+  "balance": "Always",
+  "challenge": "Social media",
+  "postpone": "Often",
+  "mobile": "1–3 hours",
+  "assign_diff": "Always",
+  "perf_impact": "Disagree",
+  "stress": "Never",
+  "method": "To-do list",
+  "improve": "Better planning",
+  "reason": "Excessive mobile use"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "3rd year",
+  "study_hours": "Less than 2 hours",
+  "tm_rating": "Excellent",
+  "planning": "Always",
+  "balance": "Often",
+  "challenge": "Social media",
+  "postpone": "Always",
+  "mobile": "1–3 hours",
+  "assign_diff": "Always",
+  "perf_impact": "Disagree",
+  "stress": "Always",
+  "method": "To-do list",
+  "improve": "Reduced social media usage",
+  "reason": "Too much academic work"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "3rd year",
+  "study_hours": "2–4 hours",
+  "tm_rating": "Good",
+  "planning": "Always",
+  "balance": "Often",
+  "challenge": "Social media",
+  "postpone": "Often",
+  "mobile": "1–3 hours",
+  "assign_diff": "Always",
+  "perf_impact": "Agree",
+  "stress": "Never",
+  "method": "Calendar",
+  "improve": "Time management training",
+  "reason": "Excessive mobile use"
+ },
+ {
+  "gender": "Female",
+  "age": "23–25",
+  "year": "3rd year",
+  "study_hours": "2–4 hours",
+  "tm_rating": "Good",
+  "planning": "Never",
+  "balance": "Always",
+  "challenge": "Lack of planning",
+  "postpone": "Often",
+  "mobile": "3–5 hours",
+  "assign_diff": "Always",
+  "perf_impact": "Disagree",
+  "stress": "Often",
+  "method": "No method",
+  "improve": "Time management training",
+  "reason": "Excessive mobile use"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "3rd year",
+  "study_hours": "4–6 hours",
+  "tm_rating": "Excellent",
+  "planning": "Often",
+  "balance": "Often",
+  "challenge": "Social media",
+  "postpone": "Sometimes",
+  "mobile": "1–3 hours",
+  "assign_diff": "Often",
+  "perf_impact": "Strongly agree",
+  "stress": "Always",
+  "method": "To-do list",
+  "improve": "Reduced social media usage",
+  "reason": "Too much academic work"
+ },
+ {
+  "gender": "Female",
+  "age": "17–19",
+  "year": "2nd year",
+  "study_hours": "4–6 hours",
+  "tm_rating": "Good",
+  "planning": "Often",
+  "balance": "Always",
+  "challenge": "Social media",
+  "postpone": "Sometimes",
+  "mobile": "3–5 hours",
+  "assign_diff": "Never",
+  "perf_impact": "Disagree",
+  "stress": "Never",
+  "method": "To-do list",
+  "improve": "Time management training",
+  "reason": "Excessive mobile use"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "4th year",
+  "study_hours": "2–4 hours",
+  "tm_rating": "Good",
+  "planning": "Never",
+  "balance": "Sometimes",
+  "challenge": "Academic work",
+  "postpone": "Always",
+  "mobile": "1–3 hours",
+  "assign_diff": "Sometimes",
+  "perf_impact": "Strongly agree",
+  "stress": "Never",
+  "method": "No method",
+  "improve": "Better planning",
+  "reason": "Excessive mobile use"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "3rd year",
+  "study_hours": "4–6 hours",
+  "tm_rating": "Poor",
+  "planning": "Never",
+  "balance": "Never",
+  "challenge": "Lack of planning",
+  "postpone": "Always",
+  "mobile": "1–3 hours",
+  "assign_diff": "Always",
+  "perf_impact": "Strongly agree",
+  "stress": "Always",
+  "method": "Calendar",
+  "improve": "Reduced social media usage",
+  "reason": "Too much academic work"
+ },
+ {
+  "gender": "Male",
+  "age": "23–25",
+  "year": "3rd year",
+  "study_hours": "2–4 hours",
+  "tm_rating": "Average",
+  "planning": "Often",
+  "balance": "Always",
+  "challenge": "Procrastination",
+  "postpone": "Sometimes",
+  "mobile": "1–3 hours",
+  "assign_diff": "Never",
+  "perf_impact": "Disagree",
+  "stress": "Never",
+  "method": "Mobile reminders",
+  "improve": "Better planning",
+  "reason": "Procrastination"
+ },
+ {
+  "gender": "Male",
+  "age": "20–22",
+  "year": "3rd year",
+  "study_hours": "2–4 hours",
+  "tm_rating": "Average",
+  "planning": "Often",
+  "balance": "Always",
+  "challenge": "Social media",
+  "postpone": "Never",
+  "mobile": "3–5 hours",
+  "assign_diff": "Sometimes",
+  "perf_impact": "Agree",
+  "stress": "Sometimes",
+  "method": "Calendar",
+  "improve": "Better planning",
+  "reason": "Too much academic work"
+ }
+];
+</script>
+<script>
+// ---------- Order of answer options ----------
+const ORDER = {
+  gender:["Male","Female"], age:["17–19","20–22","23–25","Above 25"],
+  year:["1st year","2nd year","3rd year","4th year"],
+  study_hours:["Less than 2 hours","2–4 hours","4–6 hours","More than 6 hours"],
+  tm_rating:["Poor","Average","Good","Excellent"],
+  freq:["Never","Sometimes","Often","Always"],
+  mobile:["Less than 1 hour","1–3 hours","3–5 hours","More than 5 hours"],
+  perf_impact:["Strongly disagree","Disagree","Agree","Strongly agree"]
+};
+// question key -> [title, order]
+const Q = {
+  gender:["Gender",ORDER.gender], age:["Age group",ORDER.age], year:["Year of study",ORDER.year],
+  study_hours:["Academic hours per day",ORDER.study_hours],
+  tm_rating:["Self-rated time management",ORDER.tm_rating],
+  planning:["Plans daily activities",ORDER.freq],
+  balance:["Difficulty balancing academics & life",ORDER.freq],
+  postpone:["Postpones work until deadline",ORDER.freq],
+  mobile:["Daily mobile phone time",ORDER.mobile],
+  assign_diff:["Difficulty completing assignments on time",ORDER.freq],
+  perf_impact:["Poor time management affects performance",ORDER.perf_impact],
+  stress:["Stress from insufficient time",ORDER.freq],
+  challenge:["Biggest time-management challenge",null],
+  method:["Main method used to manage time",null],
+  improve:["What would help improve time management",null],
+  reason:["Main reason for struggling",null]
+};
+const GROUPS = {
+  "g-profile":["gender","age","year","study_hours"],
+  "g-habits":["tm_rating","planning","balance","postpone","mobile","assign_diff","perf_impact","stress"],
+  "g-challenges":["challenge","reason","method","improve"]
+};
+const STATS = [
+  ["study_hours","Academic hours/day"],["tm_rating","Time management skill"],["planning","Daily planning"],
+  ["balance","Balancing difficulty"],["postpone","Procrastination"],["mobile","Mobile use"],
+  ["assign_diff","Assignment difficulty"],["perf_impact","Performance impact"],["stress","Stress"]
+];
+const CODE = k => (Q[k][1]||[]);
+
+// ---------- Filters ----------
+const el = id => document.getElementById(id);
+function fillSelect(id,key){
+  const vals=["All",...ORDER[key].filter(v=>DATA.some(d=>d[key]===v))];
+  el(id).innerHTML=vals.map(v=>`<option>${v}</option>`).join("");
+  el(id).onchange=render;
+}
+fillSelect("fGender","gender"); fillSelect("fYear","year"); fillSelect("fAge","age");
+const filtered = () => DATA.filter(d =>
+  (el("fGender").value==="All"||d.gender===el("fGender").value) &&
+  (el("fYear").value==="All"||d.year===el("fYear").value) &&
+  (el("fAge").value==="All"||d.age===el("fAge").value));
+
+// ---------- Stats helpers ----------
+const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
+const sd = a => a.length<2?NaN:Math.sqrt(a.reduce((s,x)=>s+(x-mean(a))**2,0)/(a.length-1));
+function pearson(x,y){
+  if(x.length<3) return NaN;
+  const mx=mean(x),my=mean(y);
+  let n=0,dx=0,dy=0;
+  x.forEach((v,i)=>{n+=(v-mx)*(y[i]-my);dx+=(v-mx)**2;dy+=(y[i]-my)**2});
+  return dx&&dy ? n/Math.sqrt(dx*dy) : NaN;
+}
+const codes = (rows,k) => rows.map(r=>CODE(k).indexOf(r[k])+1);
+const fmt = (v,d=2)=>isNaN(v)?"–":v.toFixed(d);
+
+// ---------- Charts ----------
+const PALETTE=["#4f46e5","#06b6d4","#f59e0b","#ef4444","#10b981","#8b5cf6"];
+const charts={};
+function makeCharts(rows){
+  const styles=getComputedStyle(document.documentElement);
+  Chart.defaults.color=styles.getPropertyValue("--muted").trim();
+  Chart.defaults.borderColor=styles.getPropertyValue("--line").trim();
+  for(const [gid,keys] of Object.entries(GROUPS)){
+    const box=el(gid);
+    keys.forEach(k=>{
+      const cnt={}; rows.forEach(r=>cnt[r[k]]=(cnt[r[k]]||0)+1);
+      let labels=Q[k][1]?Q[k][1].filter(l=>cnt[l]!==undefined):Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
+      const data=labels.map(l=>cnt[l]);
+      if(!charts[k]){
+        const card=document.createElement("div");card.className="card";
+        card.innerHTML=`<h3>${Q[k][0]}</h3><div class="chart"><canvas></canvas></div>`;
+        box.appendChild(card);
+        const pie=["gender"].includes(k);
+        charts[k]=new Chart(card.querySelector("canvas"),{
+          type:pie?"doughnut":"bar",
+          data:{labels,datasets:[{data,backgroundColor:pie?PALETTE:PALETTE[0],borderRadius:6}]},
+          options:{responsive:true,maintainAspectRatio:false,
+            indexAxis:pie?"x":(labels.length>4||labels.some(l=>l.length>14)?"y":"x"),
+            plugins:{legend:{display:pie,position:"bottom"},
+              tooltip:{callbacks:{label:c=>{const t=data.reduce((a,b)=>a+b,0);return ` ${c.parsed.y??c.parsed.x??c.parsed} (${(100*c.raw/t).toFixed(0)}%)`}}}},
+            scales:pie?{}:{x:{beginAtZero:true,ticks:{precision:0}},y:{beginAtZero:true,ticks:{precision:0}}}}
+        });
+      } else {
+        charts[k].data.labels=labels;charts[k].data.datasets[0].data=data;charts[k].update();
+      }
+    });
+  }
+}
+
+// ---------- Render ----------
+function render(){
+  const rows=filtered();
+  const n=rows.length;
+  const pct=(k,vals)=>n?Math.round(100*rows.filter(r=>vals.includes(r[k])).length/n):0;
+  el("kpis").innerHTML=[
+    [n,"Respondents"],
+    [pct("tm_rating",["Good","Excellent"])+"%","Rate their time management Good/Excellent"],
+    [pct("postpone",["Often","Always"])+"%","Often/always postpone work"],
+    [pct("stress",["Often","Always"])+"%","Often/always feel time-stressed"],
+    [pct("mobile",["3–5 hours","More than 5 hours"])+"%","Use phone 3+ hours a day"],
+    [pct("challenge",["Social media"])+"%","Name social media the top challenge"]
+  ].map(([v,l])=>`<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join("");
+  makeCharts(rows);
+
+  el("statsTbl").innerHTML="<tr><th>Variable</th><th>Mean</th><th>SD</th><th>n</th></tr>"+
+    STATS.map(([k,l])=>{const c=codes(rows,k).filter(x=>x>0);return `<tr><td>${l}</td><td>${fmt(mean(c))}</td><td>${fmt(sd(c))}</td><td>${c.length}</td></tr>`}).join("");
+
+  const cols=STATS.map(s=>codes(rows,s[0]));
+  const head="<tr><th></th>"+STATS.map((s,i)=>`<th>${i+1}</th>`).join("")+"</tr>";
+  const body=STATS.map((s,i)=>`<tr><td>${i+1}. ${s[1]}</td>`+STATS.map((t,j)=>{
+    const r=i===j?1:pearson(cols[i],cols[j]);
+    const a=isNaN(r)?0:Math.abs(r);
+    const bg=isNaN(r)?"transparent":(r>=0?`rgba(79,70,229,${a*.6})`:`rgba(239,68,68,${a*.6})`);
+    return `<td style="background:${bg}">${fmt(r)}</td>`}).join("")+"</tr>").join("");
+  el("corrTbl").innerHTML=head+body;
+}
+render();
+</script>
+</body>
+</html>
